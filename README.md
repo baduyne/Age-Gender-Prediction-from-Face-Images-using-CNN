@@ -1,60 +1,71 @@
-# 🎯 Objective  
-To predict a person’s **age** using a deep learning model that extracts facial features from images.  
-Additionally, we aim to simultaneously predict the **gender** of the person using **multi-task learning (MTL)** to leverage shared features.
 
 ---
-
-# 🗂️ Dataset  
-We use the [UTKFace dataset](https://www.kaggle.com/datasets/jangedoo/utkface-new), which contains over 20,000 facial images labeled with:
-- **Age** (0–116)
-- **Gender** (0: Male, 1: Female)
-- **Ethnicity** (not used in this task)
-
----
-
-# 🧠 Approach  
-
-## 🏗️ Model Architecture
-We use a **pretrained ResNet18** as the backbone:
-- Replace the final fully connected layer with two heads:
-  - **Regression head** for age prediction (1 neuron, no activation)
-  - **Classification head** for gender prediction (1 neuron, passed through sigmoid in inference)
 
 ## 🔧 Multi-Task Learning (MTL)
-We train the model on both tasks simultaneously:
 
-| Task     | Type               | Loss Function         |
-|----------|--------------------|------------------------|
-| Age      | Regression          | Mean Squared Error (MSE) |
-| Gender   | Binary Classification | BCEWithLogitsLoss      |
+We train the model to predict both age and gender **simultaneously**, using the following loss functions:
+
+| Task     | Output Type         | Loss Function           |
+|----------|---------------------|--------------------------|
+| Age      | Regression           | `MSELoss` (Mean Squared Error) |
+| Gender   | Binary Classification| `BCEWithLogitsLoss`     |
 
 ---
 
-# ⚠️ Problem: Loss Scale Imbalance
+## ⚠️ Challenge: Loss Scale Imbalance
 
-Age and gender losses operate on **different numerical scales**:
-- Age loss (MSE) ≈ 10 to 100+
-- Gender loss (BCE) < 1
+The **age loss** (MSE) often has a larger magnitude than the **gender loss** (BCE), which can make training unstable.
 
-✅ Solution: Learnable Uncertainty Weighting (Kendall et al.) We apply the method from the paper:
-- 📄 "[Multi-Task Learning Using Uncertainty to Weigh Losses for Scene Geometry and Semantics"](https://arxiv.org/abs/1705.07115)
-   - Access Paper > View PDF. This equation is at the bottom of page 5 in the report.
+### ✅ Solution: Learnable Uncertainty Weighting
 
-- 🧪 Idea
-  Each task is associated with a learnable uncertainty parameter (variance σ²), and the total loss is:
-$$
-\mathcal{L}_{\text{total}} = \frac{1}{2\sigma_1^2} \mathcal{L}_{\text{age}} + \log \sigma_1 + \frac{1}{2\sigma_2^2} \mathcal{L}_{\text{gender}} + \log \sigma_2
-$$
+We apply the technique from:
+> 📄 *"[Multi-Task Learning Using Uncertainty to Weigh Losses for Scene Geometry and Semantics](https://arxiv.org/abs/1705.07115)"* (Kendall et al.)
 
-- Where:
+### 💡 Idea:
+The model learns task-specific uncertainty parameters ($\sigma^2$) that automatically scale each loss:
 
-- $ \mathcal{L}_{\text{age}} $ and $ \mathcal{L}_{\text{gender}} $ are the individual losses for the age and gender tasks.
-- $ \sigma_1^2 $ and $ \sigma_2^2 $ are the uncertainties (variances) for the age and gender tasks respectively. These uncertainties are learned as log-variance parameters during training, denoted $ \log \sigma_1 $ and $ \log \sigma_2 $.
+<div align="center">
+  <img src="https://latex.codecogs.com/svg.image?\mathcal{L}_{\text{total}}=\frac{1}{2\sigma_1^2}\mathcal{L}_{\text{age}}&plus;\log\sigma_1&plus;\frac{1}{2\sigma_2^2}\mathcal{L}_{\text{gender}}&plus;\log\sigma_2" title="Multi-task loss formula"/>
+</div>
 
-This approach allows the model to automatically balance the contributions of the tasks based on their uncertainties. If one task is more uncertain, the model will give it less weight in the final total loss.
+Where:
+- L_age = Age regression loss (MSE)
+- L_gender = Gender classification loss (BCE)
+- σ₁, σ₂ = Learned uncertainties (as log-variance)
 
-Thank you for your interest.
+This allows the model to **dynamically balance** the contributions of each task based on its uncertainty during training.
 
-Best regards,
+---
 
-Duy
+## 🚀 Run the Project
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/Age-Prediction-CNN.git
+cd Age-Prediction-CNN
+```
+🖥️ How to Run from Command Line
+You can run the model in two modes:
+- ✅ Mode 0: Use Webcam:
+```bash
+python executing_model.py --mode 0
+# or shorthand
+python executing_model.py -m 0
+```
+- 🖼️ Mode 1: Predict from a Static Image
+```bash
+python executing_model.py --mode 1 --image_path path_to_image.jpg
+# or shorthand
+python executing_model.py -m 1 -i path_to_image.jpg
+```
+🔧 Requirements
+Ensure you have the necessary dependencies installed:
+
+```bash
+pip install -r requirements.txt
+```
+
+Demo: 
+![Demo](demo.gif)
+
+(づ｡◕‿‿◕｡)づ 💕 Thank you for your intrest on my project.
