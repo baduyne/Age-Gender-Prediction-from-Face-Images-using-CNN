@@ -64,8 +64,4 @@ Ensure you have the necessary dependencies installed:
 ```bash
 pip install -r requirements.txt
 ```
-
-Demo: 
-![Demo](demo.gif)
-
 (づ｡◕‿‿◕｡)づ 💕 Thank you for your interest on my project.
