@@ -41,7 +41,7 @@ This allows the model to **dynamically balance** the contributions of each task 
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/Age-Prediction-CNN.git
+git clone https://github.com/baduyne/Age-Gender-Prediction-from-Face-Images-using-CNN.git
 cd Age-Prediction-CNN
 ```
 🖥️ How to Run from Command Line
